@@ -1,8 +1,11 @@
-const { Client } = require("whatsapp-web.js");
+const { Client, Buttons } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
 
-const client = new Client();
+const client = new Client({
+    authStrategy: new (require("whatsapp-web.js").LocalAuth)()
+});
 
+// --- QR ---
 client.on("qr", qr => {
     qrcode.generate(qr, { small: true });
 });
@@ -11,23 +14,27 @@ client.on("ready", () => {
     console.log("✅ Bot conectado y escuchando mensajes...");
 });
 
-// --- MENSAJES ---
-const menu = `👋 *Bienvenido a nuestro servicio* 👋
+// --- MENÚ PRINCIPAL ---
+const menu = new Buttons(
+    "👋 *Bienvenido a nuestro servicio* 👋\n\nSelecciona una categoría:",
+    [
+        { body: "🎬 Streaming" },
+        { body: "🎶 Música" },
+        { body: "🎮 Gaming" },
+        { body: "🤖 IA y Herramientas" },
+        { body: "💻 Programas de PC" }
+    ],
+    "📋 Menú Principal",
+    "Toca un botón para continuar"
+);
 
-Escribe el número de la categoría que quieres consultar:
-
-1️⃣ Streaming
-2️⃣ Música
-3️⃣ Gaming
-4️⃣ IA
-5️⃣ Programas de PC
-`;
-
+// --- RESPUESTAS POR CATEGORÍA ---
 const streaming = `🎬 *Streaming*
 - Amazon Prime – $15.000
 - HBO Max – $15.000
 - Netflix – $15.000
 - Disney+ – $15.000
+- Disney Estándar (genérico 1P) – $10.000
 - Apple TV+ – $15.000
 - Star+ – $15.000
 - Paramount+ – $14.000
@@ -35,6 +42,14 @@ const streaming = `🎬 *Streaming*
 - MagisTV – $12.500
 - IPTV Premium – $15.000
 - TeleLatino + Win+ – $15.000
+- El Profe Net + Win+ (30 días) – $13.000
+- Plex cuenta completa (30 días) – $20.000
+- Universal+ (1 pantalla, 30 días) – $13.000
+- Claro Video (30 días Win+) – $17.000
+- Viki Rakuten Doramas – $12.000
+- MUBI pantalla – $13.000
+- Movistar TV Play CO – $17.000
+- Jellyfin pantalla – $14.000
 - Pornhub +18 – $15.000
 - DirecTVGO + Win Sports – $14.000
 - Vix+ – $13.000
@@ -46,10 +61,11 @@ const musica = `🎶 *Música*
 - Deezer – $13.000
 - Claro Música – $13.000
 - YouTube Premium – $13.000
+- Apple Music (1 mes) – $18.000
+- Tidal (1 mes) – $13.000
 `;
 
 const gaming = `🎮 *Gaming*
-- Pines Free Fire – $26.000
 - Free Fire 520 diamantes 💎 – $26.000
 - Xbox Game Pass 1 mes – $25.000
 `;
@@ -57,42 +73,44 @@ const gaming = `🎮 *Gaming*
 const ia = `🤖 *IA y Herramientas*
 - ChatGPT Plus – $35.000
 - Canva Pro – $15.000
+- CapCut Pro (30 días) – $23.000
 `;
 
 const pc = `💻 *Programas de PC*
-- Office 365 – $60.000 (anual)
+- Office 365 (anual) – $60.000
 - McAfee® – $25.000
 `;
 
 // --- BOT ---
-client.on("message", msg => {
+client.on("message", async msg => {
     const text = msg.body.toLowerCase();
 
     // Palabras clave que activan el menú
-    if (text.includes("hola") || text.includes("info") || text.includes("precio") || text.includes("menú") || text.includes("menu")) {
-        msg.reply(menu);
+    if (text.includes("hola") || text.includes("info") || text.includes("menú") || text.includes("menu") || text.includes("precio")) {
+        await msg.reply(menu);
     }
 
-    // Categorías
-    else if (text === "1") {
-        msg.reply(streaming);
-    } 
-    else if (text === "2") {
-        msg.reply(musica);
-    } 
-    else if (text === "3") {
-        msg.reply(gaming);
-    } 
-    else if (text === "4") {
-        msg.reply(ia);
-    } 
-    else if (text === "5") {
-        msg.reply(pc);
-    } 
-    
-    // Respuesta por defecto si no entiende el mensaje
+    // Botones
+    else if (text === "🎬 Streaming") {
+        await msg.reply(streaming);
+        await msg.reply(menu);
+    } else if (text === "🎶 Música") {
+        await msg.reply(musica);
+        await msg.reply(menu);
+    } else if (text === "🎮 Gaming") {
+        await msg.reply(gaming);
+        await msg.reply(menu);
+    } else if (text === "🤖 IA y Herramientas") {
+        await msg.reply(ia);
+        await msg.reply(menu);
+    } else if (text === "💻 Programas de PC") {
+        await msg.reply(pc);
+        await msg.reply(menu);
+    }
+
+    // Respuesta por defecto
     else {
-        msg.reply("🤖 No entendí tu mensaje. Por favor escribe *hola* o *info* para ver el menú.");
+        await msg.reply("🤖 No entendí tu mensaje. Escribe *hola* o *info* para ver el menú.");
     }
 });
 
