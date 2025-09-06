@@ -1,41 +1,32 @@
 const { Client, LocalAuth } = require("whatsapp-web.js");
+const qrcode = require("qrcode-terminal");
 const express = require("express");
 
-// --- INICIALIZAR CLIENTE ---
+// Configurar cliente de WhatsApp
 const client = new Client({
-    authStrategy: new LocalAuth({
-        dataPath: "./.wwebjs_auth"
-    })
+    authStrategy: new LocalAuth()
 });
 
-// --- QR ---
+// QR
 client.on("qr", qr => {
-    console.log("👉 Escanea este QR en tu entorno local. No aparecerá en Render.");
+    qrcode.generate(qr, { small: true });
 });
 
-// --- READY ---
+// Listo
 client.on("ready", () => {
     console.log("✅ Bot conectado y escuchando mensajes...");
 });
 
-// --- RESPUESTA DE PRUEBA ---
+// Responder texto plano
 client.on("message", async msg => {
-    const text = msg.body.toLowerCase();
-
-    if (text.includes("hola")) {
-        await msg.reply("👋 ¡Hola! El bot en Render está funcionando ✅");
-    } else if (text.includes("info")) {
-        await msg.reply("ℹ️ Este es un mensaje de prueba desde Render.");
-    } else {
-        await msg.reply("🤖 No entendí tu mensaje. Escribe *hola* o *info*.");
-    }
+    console.log(`📩 Mensaje de ${msg.from}: ${msg.body}`);
+    await msg.reply("👋 Hola! Soy un bot de prueba en Render.");
 });
 
-// --- EXPRESS PARA RENDER ---
+// Servidor Express para Render
 const app = express();
-app.get("/", (req, res) => res.send("🤖 Bot de WhatsApp en Render está activo"));
 const PORT = process.env.PORT || 10000;
+app.get("/", (req, res) => res.send("✅ Bot activo en Render"));
 app.listen(PORT, () => console.log(`🌐 Servidor web escuchando en puerto ${PORT}`));
 
-// --- INICIAR BOT ---
 client.initialize();
