@@ -1,29 +1,24 @@
-const express = require("express");
 const { Client, LocalAuth, Buttons } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
+const express = require("express");
 
-// ==== Servidor Express (Render necesita esto) ====
-const app = express();
-const PORT = process.env.PORT || 10000;
-app.get("/", (req, res) => res.send("✅ Bot de WhatsApp activo en Render"));
-app.listen(PORT, () => console.log(`🌐 Servidor web escuchando en puerto ${PORT}`));
-
-// ==== Cliente WhatsApp ====
+// --- Inicializamos cliente de WhatsApp ---
 const client = new Client({
     authStrategy: new LocalAuth()
 });
 
-// QR en consola
+// --- QR para conexión ---
 client.on("qr", qr => {
     qrcode.generate(qr, { small: true });
     console.log("📲 Escanea este QR para conectar tu bot");
 });
 
+// --- Cuando está listo ---
 client.on("ready", () => {
     console.log("✅ Bot conectado y escuchando mensajes...");
 });
 
-// ==== MENÚ PRINCIPAL (con botones) ====
+// === MENÚ PRINCIPAL ===
 const menu = new Buttons(
     "👋 *Bienvenido a nuestro servicio* 👋\n\nSelecciona una categoría:",
     [
@@ -37,7 +32,7 @@ const menu = new Buttons(
     "Toca un botón para continuar"
 );
 
-// ==== RESPUESTAS DE CATEGORÍAS ====
+// === RESPUESTAS POR CATEGORÍA ===
 const streaming = `🎬 *Streaming*
 - Amazon Prime – $15.000
 - HBO Max – $15.000
@@ -90,17 +85,16 @@ const pc = `💻 *Programas de PC*
 - McAfee® – $25.000
 `;
 
-// ==== LÓGICA DEL BOT ====
+// === LÓGICA DEL BOT ===
 client.on("message", async msg => {
     const text = msg.body.toLowerCase();
-    console.log(`📩 Mensaje de ${msg.from}: ${msg.body}`);
 
-    // Palabras clave que activan el menú
-    if (text.includes("hola") || text.includes("info") || text.includes("menu") || text.includes("menú") || text.includes("precio")) {
+    // Palabras clave para mostrar menú
+    if (text.includes("hola") || text.includes("info") || text.includes("menú") || text.includes("menu") || text.includes("precio")) {
         await msg.reply(menu);
     }
 
-    // Botones
+    // Respuestas según botón
     else if (text === "🎬 Streaming") {
         await msg.reply(streaming);
         await msg.reply(menu);
@@ -126,3 +120,11 @@ client.on("message", async msg => {
 
 // Inicializar cliente
 client.initialize();
+
+// === SERVIDOR EXPRESS PARA RENDER ===
+const app = express();
+const PORT = process.env.PORT || 10000;
+app.get("/", (req, res) => res.send("🤖 Bot de WhatsApp corriendo correctamente..."));
+app.listen(PORT, () => {
+    console.log(`🌐 Servidor web escuchando en puerto ${PORT}`);
+});
