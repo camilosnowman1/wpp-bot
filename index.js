@@ -1,13 +1,15 @@
-const { Client, Buttons } = require("whatsapp-web.js");
+const { Client, Buttons, LocalAuth } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
 
+// --- CLIENTE ---
 const client = new Client({
-    authStrategy: new (require("whatsapp-web.js").LocalAuth)()
+    authStrategy: new LocalAuth() // Sesión persistente
 });
 
 // --- QR ---
 client.on("qr", qr => {
     qrcode.generate(qr, { small: true });
+    console.log("📲 Escanea este QR para iniciar sesión");
 });
 
 client.on("ready", () => {
@@ -29,7 +31,8 @@ const menu = new Buttons(
 );
 
 // --- RESPUESTAS POR CATEGORÍA ---
-const streaming = `🎬 *Streaming*
+const streaming = new Buttons(
+    `🎬 *Streaming*
 - Amazon Prime – $15.000
 - HBO Max – $15.000
 - Netflix – $15.000
@@ -53,58 +56,62 @@ const streaming = `🎬 *Streaming*
 - Pornhub +18 – $15.000
 - DirecTVGO + Win Sports – $14.000
 - Vix+ – $13.000
-- NBA League Pass ⭐
-`;
+- NBA League Pass ⭐`,
+    [{ body: "⬅️ Volver al Menú" }]
+);
 
-const musica = `🎶 *Música*
+const musica = new Buttons(
+    `🎶 *Música*
 - Spotify – $13.000
 - Deezer – $13.000
 - Claro Música – $13.000
 - YouTube Premium – $13.000
 - Apple Music (1 mes) – $18.000
-- Tidal (1 mes) – $13.000
-`;
+- Tidal (1 mes) – $13.000`,
+    [{ body: "⬅️ Volver al Menú" }]
+);
 
-const gaming = `🎮 *Gaming*
+const gaming = new Buttons(
+    `🎮 *Gaming*
 - Free Fire 520 diamantes 💎 – $26.000
-- Xbox Game Pass 1 mes – $25.000
-`;
+- Xbox Game Pass 1 mes – $25.000`,
+    [{ body: "⬅️ Volver al Menú" }]
+);
 
-const ia = `🤖 *IA y Herramientas*
+const ia = new Buttons(
+    `🤖 *IA y Herramientas*
 - ChatGPT Plus – $35.000
 - Canva Pro – $15.000
-- CapCut Pro (30 días) – $23.000
-`;
+- CapCut Pro (30 días) – $23.000`,
+    [{ body: "⬅️ Volver al Menú" }]
+);
 
-const pc = `💻 *Programas de PC*
+const pc = new Buttons(
+    `💻 *Programas de PC*
 - Office 365 (anual) – $60.000
-- McAfee® – $25.000
-`;
+- McAfee® – $25.000`,
+    [{ body: "⬅️ Volver al Menú" }]
+);
 
 // --- BOT ---
 client.on("message", async msg => {
-    const text = msg.body.toLowerCase();
+    console.log(`📩 Mensaje de ${msg.from}: ${msg.body}`); // Log en consola
+    const text = msg.body;
 
     // Palabras clave que activan el menú
-    if (text.includes("hola") || text.includes("info") || text.includes("menú") || text.includes("menu") || text.includes("precio")) {
+    if (["hola", "info", "menú", "menu", "precio"].some(word => text.toLowerCase().includes(word))) {
         await msg.reply(menu);
     }
 
-    // Botones
-    else if (text === "🎬 Streaming") {
-        await msg.reply(streaming);
-        await msg.reply(menu);
-    } else if (text === "🎶 Música") {
-        await msg.reply(musica);
-        await msg.reply(menu);
-    } else if (text === "🎮 Gaming") {
-        await msg.reply(gaming);
-        await msg.reply(menu);
-    } else if (text === "🤖 IA y Herramientas") {
-        await msg.reply(ia);
-        await msg.reply(menu);
-    } else if (text === "💻 Programas de PC") {
-        await msg.reply(pc);
+    // Botones principales
+    else if (text === "🎬 Streaming") await msg.reply(streaming);
+    else if (text === "🎶 Música") await msg.reply(musica);
+    else if (text === "🎮 Gaming") await msg.reply(gaming);
+    else if (text === "🤖 IA y Herramientas") await msg.reply(ia);
+    else if (text === "💻 Programas de PC") await msg.reply(pc);
+
+    // Botón volver
+    else if (text === "⬅️ Volver al Menú") {
         await msg.reply(menu);
     }
 
@@ -114,4 +121,22 @@ client.on("message", async msg => {
     }
 });
 
+// --- MANEJO DE ERRORES ---
+process.on("unhandledRejection", (reason, p) => {
+    console.error("🚨 Error no manejado:", reason);
+});
+
 client.initialize();
+
+// --- Servidor web falso para Render ---
+const express = require("express");
+const app = express();
+
+app.get("/", (req, res) => {
+    res.send("🤖 Bot de WhatsApp corriendo en Render ✅");
+});
+
+app.listen(process.env.PORT || 3000, () => {
+    console.log("🌐 Servidor web escuchando en puerto " + (process.env.PORT || 3000));
+});
+
