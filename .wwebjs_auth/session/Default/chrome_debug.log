@@ -13,3 +13,6 @@
 [0906/042537.553:INFO:CONSOLE(115)] "Event handler of 'x-storagemutated-1' event must be added on the initial evaluation of worker script.", source: https://static.whatsapp.net/rsrc.php/v4/yJ/r/cCqir2t3AAf.js (115)
 [0906/042732.084:INFO:CONSOLE(115)] "Event handler of 'x-storagemutated-1' event must be added on the initial evaluation of worker script.", source: https://static.whatsapp.net/rsrc.php/v4/yJ/r/cCqir2t3AAf.js (115)
 [0906/042834.073:INFO:CONSOLE(115)] "Event handler of 'x-storagemutated-1' event must be added on the initial evaluation of worker script.", source: https://static.whatsapp.net/rsrc.php/v4/yJ/r/cCqir2t3AAf.js (115)
+[0906/043022.052:INFO:CONSOLE(115)] "Event handler of 'x-storagemutated-1' event must be added on the initial evaluation of worker script.", source: https://static.whatsapp.net/rsrc.php/v4/yJ/r/cCqir2t3AAf.js (115)
+[0906/043040.821:INFO:CONSOLE(905)] "Failed to parse video contentType: video/mp4; codecs=avc1.42000a", source: https://static.whatsapp.net/rsrc.php/v4iZYx4/y6/l/es_LA-j/mqRXmGrgk9_.js (905)
+[0906/043040.822:INFO:CONSOLE(905)] "Failed to parse video contentType: video/mp4; codecs=hev1.1.6.L93.B0", source: https://static.whatsapp.net/rsrc.php/v4iZYx4/y6/l/es_LA-j/mqRXmGrgk9_.js (905)
