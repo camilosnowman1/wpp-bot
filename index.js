@@ -1,27 +1,35 @@
 require("dotenv").config();
-const { Client, RemoteAuth, Buttons } = require("whatsapp-web.js");
+const { Client, RemoteAuth } = require("whatsapp-web.js");
 const mongoose = require("mongoose");
 const { MongoStore } = require("wwebjs-mongo");
 const express = require("express");
+const qrcode = require("qrcode-terminal");
 
 (async () => {
-    // 🔌 Conexión a MongoDB Atlas
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log("✅ Conectado a MongoDB Atlas");
+    try {
+        await mongoose.connect(process.env.MONGODB_URI);
+        console.log("✅ Conectado a MongoDB Atlas");
+    } catch (err) {
+        console.error("❌ Error al conectar a MongoDB:", err);
+        return;
+    }
 
     const store = new MongoStore({ mongoose });
 
     const client = new Client({
         authStrategy: new RemoteAuth({
             store: store,
-            backupSyncIntervalMs: 300000, // cada 5 min
-        })
+            backupSyncIntervalMs: 300000,
+        }),
+        puppeteer: {
+            headless: true,
+            args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        },
     });
 
-    // --- EVENTOS DEL BOT ---
     client.on("qr", (qr) => {
         console.log("📲 Escanea este QR para conectar tu bot");
-        console.log(qr);
+        qrcode.generate(qr, { small: true });
     });
 
     client.on("ready", () => {
@@ -29,18 +37,16 @@ const express = require("express");
     });
 
     // --- MENÚ PRINCIPAL ---
-    const menu = new Buttons(
-        "👋 *Bienvenido a nuestro servicio* 👋\n\nSelecciona una categoría:",
-        [
-            { body: "🎬 Streaming" },
-            { body: "🎶 Música" },
-            { body: "🎮 Gaming" },
-            { body: "🤖 IA y Herramientas" },
-            { body: "💻 Programas de PC" }
-        ],
-        "📋 Menú Principal",
-        "Toca un botón para continuar"
-    );
+    const menuText = `👋 *Bienvenido a nuestro servicio* 👋
+
+Escribe el número de la categoría que quieras:
+
+1️⃣ Streaming  
+2️⃣ Música  
+3️⃣ Gaming  
+4️⃣ AI y Herramientas  
+5️⃣ Programas de PC
+`;
 
     // --- RESPUESTAS POR CATEGORÍA ---
     const streaming = `🎬 *Streaming*
@@ -48,7 +54,7 @@ const express = require("express");
 - HBO Max – $15.000
 - Netflix – $15.000
 - Disney+ – $15.000
-- Disney Estándar (genérico 1P) – $10.000
+- Disney Estándar – $10.000
 - Apple TV+ – $15.000
 - Star+ – $15.000
 - Paramount+ – $14.000
@@ -81,8 +87,9 @@ const express = require("express");
 - Free Fire 520 diamantes 💎 – $26.000
 - Xbox Game Pass 1 mes – $25.000`;
 
-    const ia = `🤖 *IA y Herramientas*
+    const ai = `🤖 *AI y Herramientas*
 - ChatGPT Plus – $35.000
+- Gemini AI Pro – $35.000
 - Canva Pro – $15.000
 - CapCut Pro (30 días) – $23.000`;
 
@@ -90,42 +97,49 @@ const express = require("express");
 - Office 365 (anual) – $60.000
 - McAfee® – $25.000`;
 
+    // --- MENSAJE DE PAGO ---
+    const pagoMsg = `💳 *Datos de pago:*  
+Nequi o Daviplata: *3015423697*  
+
+📸 Por favor envía el *capture de la transferencia* una vez realizado el pago, breve recibirás la cuenta correspondiente ✅`;
+
     // --- BOT ---
-    client.on("message", async msg => {
-        const text = msg.body.toLowerCase();
+    client.on("message", async (msg) => {
+        const text = msg.body.trim().toLowerCase();
+        console.log("📩 Mensaje recibido:", text);
 
-        // Palabras clave para mostrar menú
-        if (text.includes("hola") || text.includes("info") || text.includes("menu") || text.includes("menú") || text.includes("precio")) {
-            await msg.reply(menu);
+        // ✅ Palabras clave que muestran el menú
+        if (
+            ["hola", "info", "informacion", "información", "menu", "menú", "precio", "pantalla", "pantallas", "servicios"]
+                .some(word => text.includes(word))
+        ) {
+            await msg.reply(menuText);
+            return;
         }
 
-        // Respuestas a botones
-        else if (text === "🎬 Streaming") {
+        // ✅ Opción por número
+        if (text === "1") {
             await msg.reply(streaming);
-            await msg.reply(menu);
-        } else if (text === "🎶 Música") {
+            await msg.reply(pagoMsg);
+        } else if (text === "2") {
             await msg.reply(musica);
-            await msg.reply(menu);
-        } else if (text === "🎮 Gaming") {
+            await msg.reply(pagoMsg);
+        } else if (text === "3") {
             await msg.reply(gaming);
-            await msg.reply(menu);
-        } else if (text === "🤖 IA y Herramientas") {
-            await msg.reply(ia);
-            await msg.reply(menu);
-        } else if (text === "💻 Programas de PC") {
+            await msg.reply(pagoMsg);
+        } else if (text === "4") {
+            await msg.reply(ai);   // 🔥 Corregido: antes estaba "ia"
+            await msg.reply(pagoMsg);
+        } else if (text === "5") {
             await msg.reply(pc);
-            await msg.reply(menu);
-        }
-
-        // Default si no entiende
-        else {
-            await msg.reply("🤖 No entendí tu mensaje. Escribe *hola* o *info* para ver el menú.");
+            await msg.reply(pagoMsg);
+        } else {
+            await msg.reply("🤖 No entendí tu mensaje. Escribe *hola*, *info* o *precio* para ver el menú.");
         }
     });
 
     client.initialize();
 
-    // 🌐 Servidor Express para Render
     const app = express();
     app.get("/", (req, res) => res.send("🤖 Bot de WhatsApp corriendo con MongoDB Atlas"));
     const PORT = process.env.PORT || 10000;
