@@ -1,3 +1,6 @@
-2025/09/06-15:56:53.585 1af8 Reusing MANIFEST C:\Users\camil\OneDrive\Desktop\wpp-bot\.wwebjs_auth\RemoteAuth\Default\Local Storage\leveldb/MANIFEST-000001
-2025/09/06-15:56:53.586 1af8 Recovering log #3
-2025/09/06-15:56:53.587 1af8 Reusing old log C:\Users\camil\OneDrive\Desktop\wpp-bot\.wwebjs_auth\RemoteAuth\Default\Local Storage\leveldb/000003.log 
+2025/09/07-14:06:08.525 8df0 Reusing MANIFEST C:\Users\camil\OneDrive\Desktop\wpp-bot\.wwebjs_auth\RemoteAuth\Default\Local Storage\leveldb/MANIFEST-000001
+2025/09/07-14:06:08.526 8df0 Recovering log #4
+2025/09/07-14:06:08.526 8df0 Reusing old log C:\Users\camil\OneDrive\Desktop\wpp-bot\.wwebjs_auth\RemoteAuth\Default\Local Storage\leveldb/000004.log 
+2025/09/07-14:46:25.266 6ef8 Level-0 table #8: started
+2025/09/07-14:46:25.319 6ef8 Level-0 table #8: 15382 bytes OK
+2025/09/07-14:46:25.323 6ef8 Delete type=0 #4
